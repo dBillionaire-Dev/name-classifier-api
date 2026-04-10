@@ -16,10 +16,6 @@ app.use((_req: Request, res: Response, next: NextFunction): void => {
 });
 
 // Handle preflight OPTIONS requests
-// app.options("/*", (_req: Request, res: Response): void => {
-//   res.sendStatus(204);
-// });
-
 app.use((_req: Request, res: Response, next: NextFunction) => {
     if (_req.method === "OPTIONS") {
         return res.sendStatus(204);
