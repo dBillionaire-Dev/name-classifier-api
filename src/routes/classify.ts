@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, type Request, type Response } from "express";
 import { fetchGenderize } from "../services/genderize";
 import { processGenderizeResponse } from "../utils/processor";
 
@@ -8,7 +8,7 @@ classifyRouter.get("/classify", async (req: Request, res: Response) => {
   const { name } = req.query;
 
   // 1. Missing or empty name → 400
-  if (name === undefined || name === "") {
+  if (!name) {
     return res.status(400).json({
       status: "error",
       message: "Missing required query parameter: name",
@@ -37,7 +37,7 @@ classifyRouter.get("/classify", async (req: Request, res: Response) => {
 
   // 4. Edge case: gender is null or count is 0
   if (raw.gender === null || raw.count === 0) {
-    return res.status(200).json({
+    return res.status(422).json({
       status: "error",
       message: "No prediction available for the provided name",
     });
