@@ -6,3 +6,4 @@ dist/
 IDE files
 .idea/
 .vscode/
+.vercel

@@ -1,25 +1,10 @@
 # Genderize Classify API
 
-HNG Backend Stage 0 Task — Name gender classification endpoint built with **Node.js**, **Express**, and **TypeScript**.
-
-## Overview
-
-This is a REST API that classifies a given name by gender using the Genderize API.
-It processes the raw API response, adds business logic (confidence scoring), and returns a structured response.
+Stage 0 Backend Assessment — Name gender classification endpoint built with **Node.js**, **Express**, and **TypeScript**.
 
 ## What It Does
 
 Exposes a single GET endpoint that accepts a `name` query parameter, calls the [Genderize API](https://genderize.io/), processes the raw response, and returns a structured result.
-
-## Features
-- Accepts a name via query parameter
-- Integrates with external Genderize API
-- Renames count → sample_size
-- Computes confidence score (is_confident)
-- Generates dynamic timestamp (processed_at)
-- Handles input validation and edge cases
-- Proper error handling with meaningful status codes
-- CORS enabled for public access
 
 ## Tech Stack
 
@@ -39,7 +24,30 @@ If you're starting from scratch (no `package.json` yet), initialise the project 
 npm init -y
 ```
 
-This creates a default `package.json`.
+This creates a default `package.json`. Then replace its contents with the following so the scripts, name, and metadata are correctly set:
+
+```json
+{
+  "name": "genderize-api",
+  "version": "1.0.0",
+  "description": "Stage 0 Backend — Name classification API using Genderize",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
+```
 
 ---
 
@@ -48,35 +56,26 @@ This creates a default `package.json`.
 Install all production and development dependencies in one command:
 
 ```bash
-npm install express dotenv
-```
-
-```bash
-npm install --save-dev @types/express @types/node nodemon ts-node typescript
+npm install
 ```
 
 This installs everything listed under both `dependencies` and `devDependencies` in `package.json`:
 
-| Package          | Type | Purpose |
-|------------------|---|---|
-| `express`        | dependency | Web framework for building the API |
-| `dotenv`         | dependency | Loads environment variables from a `.env` file into `process.env` at runtime |
+| Package | Type | Purpose |
+|---|---|---|
+| `express` | dependency | Web framework for building the API |
 | `@types/express` | devDependency | TypeScript type definitions for Express |
-| `@types/node`    | devDependency | TypeScript type definitions for Node.js built-ins |
-| `nodemon`        | devDependency | Watches for file changes and auto-restarts the server in dev |
-| `ts-node`        | devDependency | Executes TypeScript directly without a separate compile step |
-| `typescript`     | devDependency | The TypeScript compiler (`tsc`) |
+| `@types/node` | devDependency | TypeScript type definitions for Node.js built-ins |
+| `ts-node-dev` | devDependency | Runs TypeScript directly in dev with hot reload |
+| `typescript` | devDependency | The TypeScript compiler (`tsc`) |
 
 > **Note:** `devDependencies` are only used during development and building. When you deploy, platforms like Vercel and Railway install only `dependencies` for the production runtime.
 
 ---
 
 ### 3. TypeScript configuration
-```bash
-npx tsc --init
-```
 
-Creates a `tsconfig.json` file in the root of your project.
+Create a `tsconfig.json` file in the root of your project with the following content:
 
 ```json
 {
@@ -90,6 +89,7 @@ Creates a `tsconfig.json` file in the root of your project.
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
@@ -105,6 +105,7 @@ What each key does:
 - **`strict: true`** — enables all strict type checks, catching more bugs at compile time
 - **`esModuleInterop: true`** — allows you to use `import express from "express"` instead of `import * as express from "express"`
 - **`skipLibCheck: true`** — skips type checking of declaration files in `node_modules`, speeding up compilation
+- **`resolveJsonModule: true`** — allows importing `.json` files directly in TypeScript
 
 ---
 
@@ -129,34 +130,30 @@ npm start
 
 ### `GET /api/classify?name={name}`
 
-Taking:
-### `GET /api/classify?name=nezer`
-
 **Success Response (200):**
 ```json
 {
   "status": "success",
   "data": {
-    "name": "nezer",
+    "name": "john",
     "gender": "male",
-    "probability": 0.93,
-    "sample_size": 101,
+    "probability": 0.99,
+    "sample_size": 1234,
     "is_confident": true,
-    "processed_at": "2026-04-10T14:40:25.167Z"
+    "processed_at": "2026-04-10T10:00:00.000Z"
   }
 }
 ```
 
 **Error Responses:**
 
-| Scenario                | Status | Message                                         |
-|-------------------------|--------|-------------------------------------------------|
-| Success                 | 200    | `JSON containing the processed data`            |
-| Missing `name` param    | 400    | `Missing required query parameter: name`        |
-| `name` is not a string  | 422    | `Query parameter 'name' must be a string`       |
-| No Genderize prediction | 422    | `No prediction available for the provided name` |
-| Upstream API failure    | 502    | `Upstream API error: ...`                       |
-| Server error            | 500    | `Internal server error: ...`                    |
+| Scenario | Status | Message |
+|---|---|---|
+| Missing `name` param | 400 | `Missing required query parameter: name` |
+| `name` is not a string | 422 | `Query parameter 'name' must be a string` |
+| No Genderize prediction | 200 | `No prediction available for the provided name` |
+| Upstream API failure | 502 | `Upstream API error: ...` |
+| Server error | 500 | `Internal server error: ...` |
 
 All errors follow:
 ```json
